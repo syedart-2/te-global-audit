@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Viral Architect | Performance Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-4px); border-color: #38bdf8; }
+        .stat-val { font-size: 1.875rem; font-weight: 700; color: #38bdf8; }
+        .badge-low { background: #7f1d1d; color: #fecaca; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+        .badge-good { background: #064e3b; color: #a7f3d0; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-white">🚀 GitHub Viral Architect</h1>
+                <p class="text-slate-400">High-Level Performance Audit & Strategy Dashboard</p>
+            </div>
+            <div class="flex gap-2">
+                <span class="bg-blue-600 px-4 py-2 rounded-lg font-mono text-sm">v1.0.2-Stable</span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="card">
+                <p class="text-slate-400 text-sm">Total Reach</p>
+                <p class="stat-val">2.87M</p>
+            </div>
+            <div class="card">
+                <p class="text-slate-400 text-sm">Avg. Conversion</p>
+                <p class="stat-val">1.52</p>
+            </div>
+            <div class="card">
+                <p class="text-slate-400 text-sm">Hashtag Boost</p>
+                <p class="stat-val">2.9x</p>
+            </div>
+            <div class="card">
+                <p class="text-slate-400 text-sm">Top Account</p>
+                <p class="stat-val text-emerald-400">Uzbek</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="card">
+                <h3 class="text-lg font-semibold mb-4">Reach vs. Share Rate by Language</h3>
+                <canvas id="performanceChart"></canvas>
+            </div>
+            <div class="card">
+                <h3 class="text-lg font-semibold mb-4">Follower Conversion Rate (per 1k Reach)</h3>
+                <canvas id="conversionChart"></canvas>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="card col-span-2">
+                <h3 class="text-lg font-semibold mb-4">Regional Timing Audit</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="text-slate-400 border-b border-slate-700">
+                            <tr>
+                                <th class="pb-2">Language</th>
+                                <th class="pb-2">Current Best Hour</th>
+                                <th class="pb-2">Status</th>
+                                <th class="pb-2">Recommendation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timingTable" class="divide-y divide-slate-800">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="text-lg font-semibold mb-4">Golden Hours 🏆</h3>
+                <p class="text-sm text-slate-400 mb-4">Target these UTC hours for maximum global virality based on top performers (Uzbek/Persian):</p>
+                <div class="flex flex-col gap-3">
+                    <div class="bg-slate-800 p-3 rounded border-l-4 border-emerald-500">
+                        <span class="font-bold">05:00 UTC</span> - Peak Reach Window
+                    </div>
+                    <div class="bg-slate-800 p-3 rounded border-l-4 border-emerald-500">
+                        <span class="font-bold">06:00 UTC</span> - High Engagement
+                    </div>
+                    <div class="bg-slate-800 p-3 rounded border-l-4 border-blue-500">
+                        <span class="font-bold">12:00 UTC</span> - Mid-Day Viral Spike
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="card">
+                <h3 class="text-lg font-semibold mb-4">Title Improvement Module</h3>
+                <div class="space-y-4">
+                    <div class="p-3 bg-slate-900 rounded border border-slate-700">
+                        <p class="text-xs text-blue-400 font-bold uppercase mb-1">Template 1: Curiosity Gap</p>
+                        <p class="text-sm italic">"The secret to [Topic] that nobody tells you..."</p>
+                    </div>
+                    <div class="p-3 bg-slate-900 rounded border border-slate-700">
+                        <p class="text-xs text-blue-400 font-bold uppercase mb-1">Template 2: Negative Constraint</p>
+                        <p class="text-sm italic">"Stop doing [Mistake] if you want [Goal]!"</p>
+                    </div>
+                    <div class="p-3 bg-slate-900 rounded border border-slate-700">
+                        <p class="text-xs text-blue-400 font-bold uppercase mb-1">Template 3: Relatability</p>
+                        <p class="text-sm italic">"Has this ever happened to you? 😂"</p>
+                    </div>
+                    <div class="p-3 bg-slate-900 rounded border border-slate-700">
+                        <p class="text-xs text-blue-400 font-bold uppercase mb-1">Template 4: Authority</p>
+                        <p class="text-sm italic">"Why [Figure/Allah] doesn't stop [Pain]..."</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="text-lg font-semibold mb-4">Content Bridge (Top Uzbek Post)</h3>
+                <div id="contentBridge" class="space-y-4">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const data = {
+            "performance": [
+                {"Language": "Arabic", "Reach": 220102, "Share Rate": 1.72, "Conv": 0.82, "Flag": "Low"},
+                {"Language": "Bengali", "Reach": 130318, "Share Rate": 1.45, "Conv": 1.15, "Flag": "Good"},
+                {"Language": "French", "Reach": 5099, "Share Rate": 0.49, "Conv": 0.59, "Flag": "Low"},
+                {"Language": "German", "Reach": 16879, "Share Rate": 0.46, "Conv": 2.01, "Flag": "Good"},
+                {"Language": "Hindi", "Reach": 39517, "Share Rate": 4.32, "Conv": 2.33, "Flag": "Good"},
+                {"Language": "Indonesian", "Reach": 3176, "Share Rate": 0.06, "Conv": 0.63, "Flag": "Low"},
+                {"Language": "Persian", "Reach": 349892, "Share Rate": 3.17, "Conv": 2.29, "Flag": "Good"},
+                {"Language": "Russian", "Reach": 50889, "Share Rate": 0.63, "Conv": 0.22, "Flag": "Low"},
+                {"Language": "Spanish", "Reach": 3562, "Share Rate": 0.51, "Conv": 0.56, "Flag": "Low"},
+                {"Language": "Urdu", "Reach": 291701, "Share Rate": 5.06, "Conv": 2.01, "Flag": "Good"},
+                {"Language": "Uzbek", "Reach": 1757534, "Share Rate": 3.10, "Conv": 4.15, "Flag": "Good"}
+            ],
+            "best_times": [
+                {"Language": "Arabic", "Hour": 9}, {"Language": "French", "Hour": 9},
+                {"Language": "German", "Hour": 8}, {"Language": "Indonesian", "Hour": 5},
+                {"Language": "Uzbek", "Hour": 5}, {"Language": "Persian", "Hour": 12}
+            ],
+            "top_uzbek": [
+                {"Description": "Qalbingiz jismingizni tark etgandan so'ng...", "Reach": 598173, "Hour": 5}
+            ]
+        };
+
+        // Performance Chart
+        new Chart(document.getElementById('performanceChart'), {
+            type: 'bar',
+            data: {
+                labels: data.performance.map(i => i.Language),
+                datasets: [
+                    { label: 'Reach', data: data.performance.map(i => i.Reach), backgroundColor: '#38bdf8', yAxisID: 'y' },
+                    { label: 'Share Rate (%)', data: data.performance.map(i => i.Share Rate), type: 'line', borderColor: '#f43f5e', yAxisID: 'y1' }
+                ]
+            },
+            options: { scales: { y1: { position: 'right' } } }
+        });
+
+        // Conversion Chart
+        new Chart(document.getElementById('conversionChart'), {
+            type: 'bar',
+            data: {
+                labels: data.performance.map(i => i.Language),
+                datasets: [{
+                    label: 'Follower Conversion Rate',
+                    data: data.performance.map(i => i.Conv),
+                    backgroundColor: data.performance.map(i => i.Flag === 'Low' ? '#ef4444' : '#10b981')
+                }]
+            }
+        });
+
+        // Timing Table
+        const table = document.getElementById('timingTable');
+        data.performance.forEach(lang => {
+            const time = data.best_times.find(t => t.Language === lang.Language);
+            const hour = time ? time.Hour : '--';
+            const status = ['German', 'Indonesian', 'French'].includes(lang.Language) ? 'Misaligned' : 'Optimal';
+            const rec = status === 'Misaligned' ? 'Move to 05:00 UTC' : 'Maintain Window';
+            
+            table.innerHTML += `
+                <tr>
+                    <td class="py-3">${lang.Language}</td>
+                    <td>${hour}:00</td>
+                    <td><span class="${status === 'Optimal' ? 'text-emerald-400' : 'text-amber-400'}">${status}</span></td>
+                    <td class="text-slate-400">${rec}</td>
+                </tr>
+            `;
+        });
+
+        // Content Bridge
+        const bridge = document.getElementById('contentBridge');
+        data.top_uzbek.forEach(post => {
+            bridge.innerHTML = `
+                <div class="bg-blue-900/20 p-4 rounded border border-blue-500/50">
+                    <p class="text-xs font-bold text-blue-400 mb-2">#1 POST PERFORMANCE: ${post.Reach.toLocaleString()} REACH</p>
+                    <p class="text-sm font-semibold mb-2">"${post.Description}"</p>
+                    <hr class="border-blue-500/30 my-3">
+                    <p class="text-xs text-slate-300"><span class="font-bold text-white">Action Plan:</span> Translate this hook for French/German markets. Schedule exactly at 05:00 UTC with "Curiosity Gap" template.</p>
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>
