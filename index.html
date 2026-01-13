@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Towards Eternity Global Growth Audit</title>
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- PapaParse for CSV (CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+    <!-- FontAwesome (CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        emerald: {
+                            450: '#10b981',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS -->
+    <style>
+        body { 
+            background-color: #0f172a; 
+            color: #e2e8f0; 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+        }
+        .card { 
+            background-color: #1e293b; 
+            border: 1px solid #334155; 
+            border-radius: 0.75rem; 
+            padding: 1.5rem; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .metric-value { font-size: 1.5rem; font-weight: 700; color: #f8fafc; }
+        .metric-label { font-size: 0.875rem; color: #94a3b8; }
+        .badge { padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+        .badge-green { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .badge-red { background-color: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .badge-yellow { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        
+        /* Table Styles */
+        .table-container { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #334155; white-space: nowrap; }
+        th { color: #94a3b8; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        td { font-size: 0.9rem; }
+        
+        /* Scrollbar for lists */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #1e293b; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-6">
+
+    <!-- Header -->
+    <header class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+        <div class="text-center md:text-left">
+            <h1 class="text-3xl font-bold text-white tracking-tight"><i class="fa-solid fa-chart-line text-emerald-400 mr-2"></i> Towards Eternity Global Growth Audit</h1>
+            <p class="text-slate-400 mt-1 text-sm md:text-base">Multi-Regional Performance Analysis & Strategy Engine</p>
+            <p class="text-slate-500 text-xs mt-2 font-medium tracking-wide">Designed by Muhammad Ali Nasir ud Din</p>
+        </div>
+        <div>
+            <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition shadow-lg shadow-blue-900/50 flex items-center gap-2">
+                <i class="fa-solid fa-upload"></i> 
+                <span>Upload Report CSV</span>
+                <input type="file" id="csvInput" accept=".csv" class="hidden">
+            </label>
+        </div>
+    </header>
+
+    <!-- Loading State -->
+    <div id="loading" class="hidden text-center py-20">
+        <i class="fa-solid fa-circle-notch fa-spin text-5xl text-blue-500"></i>
+        <p class="mt-6 text-slate-300 text-lg animate-pulse">Analyzing regional data patterns...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="max-w-2xl mx-auto text-center py-20 border-2 border-dashed border-slate-700 rounded-xl bg-slate-800/50">
+        <div class="mb-6 inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-800 text-slate-600">
+            <i class="fa-solid fa-file-csv text-4xl"></i>
+        </div>
+        <h2 class="text-2xl font-semibold text-slate-200">No Data Loaded</h2>
+        <p class="text-slate-400 mt-2 max-w-md mx-auto">Please upload your exported CSV file (Facebook/Instagram data from any date range) to generate the complete audit dashboard.</p>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard" class="max-w-7xl mx-auto hidden space-y-8 pb-12">
+        
+        <!-- Section 1: Performance Overview -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Main Chart -->
+            <div class="card lg:col-span-2 flex flex-col">
+                <h3 class="text-xl font-bold mb-4 border-b border-slate-700 pb-2">Language Performance Matrix</h3>
+                <div class="relative flex-grow min-h-[300px]">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Conversion Metrics -->
+            <div class="card flex flex-col max-h-[450px]">
+                <h3 class="text-xl font-bold mb-1">Follower Conversion Rate</h3>
+                <p class="text-xs text-slate-500 mb-4 border-b border-slate-700 pb-2">Formula: (Follows / Reach) * 1000</p>
+                <div id="conversionList" class="space-y-3 overflow-y-auto custom-scroll pr-2 flex-grow">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Regional Timing Audit -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="card">
+                <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                    <h3 class="text-xl font-bold"><i class="fa-regular fa-clock text-yellow-400 mr-2"></i>Native Timing Audit</h3>
+                </div>
+                <div class="table-container">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th>Region</th>
+                                <th>Avg Post Time</th>
+                                <th>Peak Hour</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timingTable">
+                            <!-- Injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Golden Hour Comparison -->
+            <div class="card bg-gradient-to-br from-slate-800 to-slate-900 border-blue-900/50">
+                <h3 class="text-xl font-bold mb-4 text-blue-100 flex items-center">
+                    <i class="fa-solid fa-hourglass-half mr-2 text-blue-400"></i> Golden Hour Strategy
+                </h3>
+                <div class="space-y-4">
+                    <div class="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+                        <h4 class="font-bold text-emerald-400 text-xs uppercase tracking-wide mb-1">Global Benchmark</h4>
+                        <p class="text-slate-300 text-sm">The global viral window currently aligns around <span id="globalPeak" class="font-bold text-white text-lg ml-1">--:--</span>. Accounts posting outside this window by >3 hours are penalized.</p>
+                    </div>
+                    <div id="timingRecommendations" class="space-y-2">
+                        <!-- Recs injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Title & Hook Audit -->
+        <div class="card">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <h3 class="text-xl font-bold">Title & Hook Analysis</h3>
+                <div class="flex gap-2 flex-wrap">
+                    <span class="badge badge-green">Strong Hooks</span>
+                    <span class="badge badge-yellow">Average</span>
+                    <span class="badge badge-red">Weak</span>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Hook Stats -->
+                <div class="col-span-1 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-slate-800 rounded-lg border border-slate-700">
+                            <div class="text-slate-400 text-xs uppercase font-bold">Total Posts</div>
+                            <div class="text-2xl font-bold text-white" id="totalPostsAudit">0</div>
+                        </div>
+                        <div class="p-4 bg-slate-800 rounded-lg border border-slate-700">
+                            <div class="text-slate-400 text-xs uppercase font-bold">Hook Score</div>
+                            <div class="text-2xl font-bold text-white" id="avgHookScore">0.0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h4 class="font-bold mb-3 text-sm text-emerald-400 uppercase tracking-wide">Viral Templates (Tap to Copy)</h4>
+                        <ul class="text-sm space-y-2 text-slate-400">
+                            <li class="p-3 bg-slate-800 rounded cursor-pointer hover:bg-slate-700 hover:text-white transition group border border-transparent hover:border-emerald-500/30">
+                                <span class="font-bold text-emerald-500 mr-2 group-hover:text-emerald-400">01.</span>
+                                "The secret to [Benefit] that nobody tells you..."
+                            </li>
+                            <li class="p-3 bg-slate-800 rounded cursor-pointer hover:bg-slate-700 hover:text-white transition group border border-transparent hover:border-emerald-500/30">
+                                <span class="font-bold text-emerald-500 mr-2 group-hover:text-emerald-400">02.</span>
+                                "Stop doing [Mistake] if you want [Result] 🛑"
+                            </li>
+                            <li class="p-3 bg-slate-800 rounded cursor-pointer hover:bg-slate-700 hover:text-white transition group border border-transparent hover:border-emerald-500/30">
+                                <span class="font-bold text-emerald-500 mr-2 group-hover:text-emerald-400">03.</span>
+                                "Why does [Text/Book] say X? (The Answer Shocked Me)"
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Recent Posts Table -->
+                <div class="col-span-2 table-container">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th>Title / Hook Analysis</th>
+                                <th>Rating</th>
+                                <th>Reach</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hookTable">
+                            <!-- Injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Hashtag Intelligence -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4">Hashtag Impact Correlation</h3>
+                <div class="flex items-center justify-between p-6 bg-slate-800 rounded-lg mb-4 border border-slate-700">
+                    <div class="text-center">
+                        <div class="text-xs uppercase text-slate-400 font-bold mb-1">With Tags</div>
+                        <div class="text-2xl font-bold text-emerald-400" id="reachWithTags">0</div>
+                        <div class="text-xs text-slate-500">Avg Reach</div>
+                    </div>
+                    <div class="text-xl font-bold text-slate-600">VS</div>
+                    <div class="text-center">
+                        <div class="text-xs uppercase text-slate-400 font-bold mb-1">No Tags</div>
+                        <div class="text-2xl font-bold text-red-400" id="reachNoTags">0</div>
+                        <div class="text-xs text-slate-500">Avg Reach</div>
+                    </div>
+                </div>
+                <p class="text-sm text-slate-300 p-3 bg-slate-800/50 rounded border-l-2 border-emerald-500" id="tagConclusion">
+                    Calculating correlation...
+                </p>
+            </div>
+            
+            <div class="card flex flex-col">
+                <h3 class="text-xl font-bold mb-4">SEO Strategy: Recommended Tags</h3>
+                <div class="overflow-y-auto custom-scroll pr-2 space-y-4 max-h-[250px]" id="seoSuggestions">
+                    <!-- Injected -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5: The Content Bridge (Roadmap) -->
+        <div class="card border border-emerald-500/30 relative overflow-hidden">
+            <!-- Background Glow -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+
+            <h3 class="text-xl font-bold mb-6 text-emerald-400 flex items-center relative z-10">
+                <i class="fa-solid fa-bridge mr-2"></i>The Content Bridge: Replication Strategy
+            </h3>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
+                <!-- Strategy Text -->
+                <div class="col-span-1">
+                    <div class="mb-6">
+                        <h4 class="font-bold text-white mb-3 flex items-center"><i class="fa-solid fa-check-circle text-blue-500 mr-2"></i> Immediate Actions</h4>
+                        <ul class="text-sm text-slate-300 space-y-2 pl-2 border-l border-slate-700" id="immediateFixes">
+                            <li class="pl-3">Publish consistently at <strong>Global Peak Hours</strong>.</li>
+                            <li class="pl-3">Use <strong>Question Hooks</strong> on German/French videos.</li>
+                            <li class="pl-3">Add <strong>3-5 Local Hashtags</strong> to Indonesian posts.</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-bold text-white mb-2">The "Model" Approach</h4>
+                        <p class="text-sm text-slate-400 leading-relaxed">
+                            The <strong>Uzbek</strong> account is your current Alpha. Do not reinvent the wheel. Take their top 3 viral concepts below, translate the *intent* (not just words), and repost in struggling regions.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Top 3 Posts Container -->
+                <div class="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4" id="topPostsContainer">
+                    <!-- Cards injected -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Logic Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Element References
+            const fileInput = document.getElementById('csvInput');
+            
+            // Event Listeners
+            if(fileInput) {
+                fileInput.addEventListener('change', handleFileUpload);
+            }
+        });
+
+        // --- 1. CONFIG & UTILS ---
+        
+        const languageMap = {
+            'teindonesian': 'Indonesian',
+            'towardseternitydeutsch': 'German',
+            'teuzbek': 'Uzbek',
+            'tepersian': 'Persian',
+            'tehindi': 'Hindi',
+            'teurdu': 'Urdu',
+            'tebengali': 'Bengali',
+            'terussian': 'Russian',
+            'tearabic': 'Arabic',
+            'tefrench': 'French',
+            'tespanish': 'Spanish',
+            'teenglish': 'English'
+        };
+
+        const globalHashtags = ["#islam", "#muslim", "#faith", "#spirituality", "#peace", "#life", "#truth", "#purpose"];
+
+        // --- 2. DATA PROCESSING ---
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    try {
+                        processData(results.data);
+                        document.getElementById('loading').classList.add('hidden');
+                        document.getElementById('dashboard').classList.remove('hidden');
+                    } catch (error) {
+                        console.error("Error processing data:", error);
+                        alert("Error parsing CSV data. Please check the file format.");
+                        document.getElementById('loading').classList.add('hidden');
+                        document.getElementById('emptyState').classList.remove('hidden');
+                    }
+                },
+                error: function(err) {
+                    console.error("PapaParse error:", err);
+                    alert("Failed to read file.");
+                    document.getElementById('loading').classList.add('hidden');
+                }
+            });
+        }
+
+        function getLanguageName(row) {
+            let username = (row['Account username'] || '').toLowerCase().trim();
+            if (languageMap[username]) return languageMap[username];
+            let name = row['Account name'] || '';
+            let parts = name.split('-');
+            if (parts.length > 1) return parts[1].trim();
+            return username || 'Unknown';
+        }
+
+        function parseNumber(val) {
+            if (!val) return 0;
+            // Handle cases where numbers might be strings with commas or non-numeric
+            let cleaned = val.toString().replace(/,/g, '');
+            return parseInt(cleaned) || 0;
+        }
+
+        function processData(data) {
+            const auditData = {};
+            let allPosts = [];
+
+            data.forEach(row => {
+                // Basic Validation
+                if (!row['Account username'] && !row['Account name']) return;
+
+                const lang = getLanguageName(row);
+                if (!auditData[lang]) {
+                    auditData[lang] = {
+                        posts: 0, reach: 0, shares: 0, follows: 0,
+                        hours: {}, 
+                        withTags: { reach: 0, count: 0 },
+                        noTags: { reach: 0, count: 0 }
+                    };
+                }
+
+                const reach = parseNumber(row['Reach']);
+                const shares = parseNumber(row['Shares']);
+                const follows = parseNumber(row['Follows']);
+                const publishTime = row['Publish time']; 
+                const desc = row['Description'] || "";
+
+                auditData[lang].posts++;
+                auditData[lang].reach += reach;
+                auditData[lang].shares += shares;
+                auditData[lang].follows += follows;
+
+                // Timing
+                if (publishTime) {
+                    const dateObj = new Date(publishTime);
+                    if (!isNaN(dateObj.getTime())) {
+                        const hour = dateObj.getHours();
+                        if (!auditData[lang].hours[hour]) auditData[lang].hours[hour] = { reach: 0, count: 0 };
+                        auditData[lang].hours[hour].reach += reach;
+                        auditData[lang].hours[hour].count++;
+                    }
+                }
+
+                // Hashtags
+                const hasTags = desc.includes('#');
+                if (hasTags) {
+                    auditData[lang].withTags.reach += reach;
+                    auditData[lang].withTags.count++;
+                } else {
+                    auditData[lang].noTags.reach += reach;
+                    auditData[lang].noTags.count++;
+                }
+
+                row.processedLang = lang;
+                row.cleanReach = reach;
+                allPosts.push(row);
+            });
+
+            renderCharts(auditData);
+            renderTimingAudit(auditData);
+            renderHookAudit(allPosts);
+            renderHashtagAudit(auditData);
+            renderRoadmap(allPosts, auditData);
+        }
+
+        // --- 3. RENDERING LOGIC ---
+
+        function renderCharts(auditData) {
+            const labels = Object.keys(auditData);
+            const reachData = labels.map(l => auditData[l].reach);
+            const shareRates = labels.map(l => {
+                const r = auditData[l].reach;
+                return r > 0 ? ((auditData[l].shares / r) * 100).toFixed(2) : 0;
+            });
+
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (window.myAuditChart instanceof Chart) {
+                window.myAuditChart.destroy();
+            }
+
+            window.myAuditChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Total Reach',
+                            data: reachData,
+                            backgroundColor: '#3b82f6',
+                            yAxisID: 'y',
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        },
+                        {
+                            label: 'Share Rate (%)',
+                            data: shareRates,
+                            type: 'line',
+                            borderColor: '#10b981',
+                            backgroundColor: '#10b981',
+                            borderWidth: 2,
+                            yAxisID: 'y1',
+                            tension: 0.4,
+                            pointRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { labels: { color: '#cbd5e1' } },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#f8fafc',
+                            bodyColor: '#cbd5e1',
+                            borderColor: '#334155',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            type: 'linear', 
+                            display: true, 
+                            position: 'left',
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        y1: { 
+                            type: 'linear', 
+                            display: true, 
+                            position: 'right', 
+                            grid: { drawOnChartArea: false },
+                            ticks: { color: '#10b981' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8', maxRotation: 45, minRotation: 45 }
+                        }
+                    }
+                }
+            });
+
+            // Conversion List
+            const list = document.getElementById('conversionList');
+            list.innerHTML = '';
+            
+            const conversionArr = labels.map(l => {
+                const r = auditData[l].reach;
+                const rate = r > 0 ? (auditData[l].follows / r) * 1000 : 0;
+                return { lang: l, rate: rate };
+            }).sort((a,b) => b.rate - a.rate);
+
+            conversionArr.forEach(item => {
+                const isLow = item.rate < 0.5;
+                const colorClass = isLow ? 'text-red-400' : 'text-emerald-400';
+                const warning = isLow ? '<i class="fa-solid fa-triangle-exclamation text-red-500 ml-2" title="Low Conversion"></i>' : '';
+                
+                list.innerHTML += `
+                    <div class="flex justify-between items-center p-3 bg-slate-800 rounded border border-slate-700 hover:bg-slate-700/50 transition">
+                        <span class="font-medium text-slate-300">${item.lang}</span>
+                        <div class="flex items-center">
+                            <span class="font-bold ${colorClass} mr-2">${item.rate.toFixed(2)}</span>
+                            <span class="text-xs text-slate-500">flw/1k</span>
+                            ${warning}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderTimingAudit(auditData) {
+            const table = document.getElementById('timingTable');
+            table.innerHTML = '';
+            
+            let hourTotals = {};
+
+            Object.keys(auditData).forEach(lang => {
+                let bestHour = -1;
+                let maxReach = -1;
+                let totalHours = 0;
+                let postCount = 0;
+
+                Object.keys(auditData[lang].hours).forEach(h => {
+                    const stats = auditData[lang].hours[h];
+                    const avgReach = stats.reach / stats.count;
+                    
+                    if (avgReach > maxReach) {
+                        maxReach = avgReach;
+                        bestHour = h;
+                    }
+
+                    if(!hourTotals[h]) hourTotals[h] = 0;
+                    hourTotals[h] += stats.reach;
+
+                    totalHours += (parseInt(h) * stats.count);
+                    postCount += stats.count;
+                });
+
+                const avgPostHour = postCount > 0 ? Math.round(totalHours / postCount) : 0;
+                const isMisaligned = bestHour > -1 && Math.abs(avgPostHour - bestHour) > 3;
+                const statusHtml = isMisaligned 
+                    ? `<span class="badge badge-red">Misaligned</span>` 
+                    : `<span class="badge badge-green">Optimized</span>`;
+
+                table.innerHTML += `
+                    <tr>
+                        <td class="font-medium text-slate-300">${lang}</td>
+                        <td class="text-slate-400">${formatHour(avgPostHour)}</td>
+                        <td class="text-emerald-400 font-bold">${bestHour > -1 ? formatHour(bestHour) : 'N/A'}</td>
+                        <td>${statusHtml}</td>
+                    </tr>
+                `;
+            });
+
+            // Global Peak
+            let bestGlobalH = -1;
+            let highestTotal = -1;
+            for(const h in hourTotals) {
+                if(hourTotals[h] > highestTotal) {
+                    highestTotal = hourTotals[h];
+                    bestGlobalH = h;
+                }
+            }
+            const globalPeakText = bestGlobalH > -1 ? formatHour(bestGlobalH) : "--:--";
+            document.getElementById('globalPeak').innerText = globalPeakText;
+
+            // Recommendations
+            const recs = document.getElementById('timingRecommendations');
+            recs.innerHTML = '';
+            ['German', 'Indonesian', 'French'].forEach(target => {
+                if(auditData[target] && bestGlobalH > -1) {
+                    recs.innerHTML += `
+                        <div class="p-3 bg-slate-800 rounded border-l-4 border-yellow-500">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-bold text-slate-200 text-sm">${target} Fix</span>
+                                <span class="text-[10px] text-yellow-500 font-bold bg-yellow-900/30 px-2 py-0.5 rounded">TIMING ALERT</span>
+                            </div>
+                            <p class="text-xs text-slate-400">
+                                Shift schedule to <strong>${globalPeakText} - ${formatHour(parseInt(bestGlobalH)+2)}</strong> to align with global viral waves.
+                            </p>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function formatHour(h) {
+            h = parseInt(h);
+            if(isNaN(h)) return "N/A";
+            const suffix = h >= 12 ? "PM" : "AM";
+            const val = (h % 12) || 12;
+            return `${val}:00 ${suffix}`;
+        }
+
+        function renderHookAudit(allPosts) {
+            const table = document.getElementById('hookTable');
+            table.innerHTML = '';
+            
+            let totalScore = 0;
+            let count = 0;
+
+            const recentPosts = [...allPosts].sort((a,b) => new Date(b['Publish time']) - new Date(a['Publish time'])).slice(0, 10);
+
+            recentPosts.forEach(post => {
+                const desc = post['Description'] || "";
+                const cleanReach = post['cleanReach'];
+                
+                // Audit Logic
+                const hasQuestion = desc.includes('?');
+                const hasEmoji = /[\p{Extended_Pictographic}]/u.test(desc);
+                const isShort = desc.length < 150;
+                
+                let score = 0;
+                if(hasQuestion) score++;
+                if(hasEmoji) score++;
+                if(isShort) score++;
+
+                totalScore += score;
+                count++;
+
+                let rating = 'Weak';
+                let badgeClass = 'badge-red';
+                if(score === 2) { rating = 'Average'; badgeClass = 'badge-yellow'; }
+                if(score === 3) { rating = 'Strong'; badgeClass = 'badge-green'; }
+
+                table.innerHTML += `
+                    <tr class="hover:bg-slate-800/50 transition">
+                        <td class="text-xs text-slate-400 font-bold">${post.processedLang}</td>
+                        <td>
+                            <div class="text-sm text-slate-200 truncate max-w-[200px] md:max-w-xs" title="${desc}">${desc}</div>
+                        </td>
+                        <td><span class="badge ${badgeClass}">${rating}</span></td>
+                        <td class="text-sm font-mono text-emerald-400">${cleanReach.toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('totalPostsAudit').innerText = allPosts.length;
+            document.getElementById('avgHookScore').innerText = count > 0 ? (totalScore / count).toFixed(1) + "/3.0" : "0.0";
+        }
+
+        function renderHashtagAudit(auditData) {
+            let globalWith = 0;
+            let globalWithCount = 0;
+            let globalNo = 0;
+            let globalNoCount = 0;
+
+            Object.values(auditData).forEach(d => {
+                globalWith += d.withTags.reach;
+                globalWithCount += d.withTags.count;
+                globalNo += d.noTags.reach;
+                globalNoCount += d.noTags.count;
+            });
+
+            const avgWith = globalWithCount > 0 ? Math.round(globalWith / globalWithCount) : 0;
+            const avgNo = globalNoCount > 0 ? Math.round(globalNo / globalNoCount) : 0;
+
+            document.getElementById('reachWithTags').innerText = avgWith.toLocaleString();
+            document.getElementById('reachNoTags').innerText = avgNo.toLocaleString();
+
+            const diff = avgWith - avgNo;
+            const conclusion = document.getElementById('tagConclusion');
+            if(diff > 0) {
+                const lift = avgNo > 0 ? Math.round((diff/avgNo)*100) : 100;
+                conclusion.innerHTML = `<i class="fa-solid fa-arrow-trend-up mr-1"></i> Hashtags provide a <strong class="text-emerald-400">+${lift}% lift</strong> in Reach. Essential for discovery.`;
+                conclusion.className = "text-sm text-slate-300 p-3 bg-emerald-900/20 rounded border-l-2 border-emerald-500";
+            } else {
+                conclusion.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1"></i> Hashtags are currently underperforming. Ensure tags are relevant to video content.`;
+                conclusion.className = "text-sm text-slate-300 p-3 bg-yellow-900/20 rounded border-l-2 border-yellow-500";
+            }
+
+            // Suggestions
+            const suggestionContainer = document.getElementById('seoSuggestions');
+            suggestionContainer.innerHTML = '';
+            
+            Object.keys(auditData).forEach(lang => {
+                const localTags = `#${lang.toLowerCase()} #viral${lang.substring(0,3)} #fyp${lang.substring(0,3)}`;
+                suggestionContainer.innerHTML += `
+                    <div class="p-3 bg-slate-800 rounded border border-slate-700">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="badge bg-slate-700 text-slate-200">${lang}</span>
+                        </div>
+                        <div class="text-xs text-slate-400 break-words mb-1">
+                            <span class="text-blue-400 font-bold">Global:</span> ${globalHashtags.slice(0,5).join(' ')}
+                        </div>
+                        <div class="text-xs text-slate-400">
+                            <span class="text-emerald-400 font-bold">Local:</span> ${localTags}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderRoadmap(allPosts, auditData) {
+            // Find "Uzbek" top 3 posts
+            const topPosts = allPosts
+                .filter(p => p.processedLang === 'Uzbek') 
+                .sort((a,b) => b.cleanReach - a.cleanReach)
+                .slice(0, 3);
+            
+            const displayPosts = topPosts.length > 0 ? topPosts : allPosts.sort((a,b) => b.cleanReach - a.cleanReach).slice(0, 3);
+
+            const container = document.getElementById('topPostsContainer');
+            container.innerHTML = '';
+
+            displayPosts.forEach((post, index) => {
+                const desc = post['Description'] || "No description";
+                const title = desc.split('\n')[0].substring(0, 60) + (desc.length > 60 ? "..." : "");
+                
+                container.innerHTML += `
+                    <div class="bg-slate-800 rounded-lg p-4 border border-slate-700 relative overflow-hidden group hover:border-emerald-500/50 transition">
+                        <div class="absolute top-0 right-0 bg-yellow-500 text-black text-[10px] font-bold px-2 py-1 rounded-bl shadow-lg">
+                            #${index + 1} Viral
+                        </div>
+                        <div class="text-xs text-emerald-400 font-mono mb-2 flex items-center">
+                            <i class="fa-solid fa-eye mr-1"></i> ${post.cleanReach.toLocaleString()}
+                        </div>
+                        <h5 class="font-bold text-white text-sm mb-3 leading-snug">"${title}"</h5>
+                        <div class="text-[10px] text-slate-500 flex justify-between items-center border-t border-slate-700 pt-2">
+                            <span><i class="fa-regular fa-calendar mr-1"></i> ${post['Publish time'].split(' ')[0]}</span>
+                            <span class="text-blue-400 font-bold">REPLICATE THIS</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
