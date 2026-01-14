@@ -1,0 +1,145 @@
+
+Privacy Policy
+
+474
+                            <span class="text-gray-500 italic">Data required...</span>
+475
+                        </div>
+476
+                        <ul class="text-xs text-gray-400 space-y-2 list-disc list-inside">
+477
+                            <li><strong>Action 1:</strong> Lower performing accounts must shift posting time to match the leader's window.</li>
+478
+                            <li><strong>Action 2:</strong> Replicate the "Question-First" structure from top performing titles.</li>
+479
+                        </ul>
+480
+                    </div>
+481
+                </div>
+482
+​
+483
+                <!-- Immediate Fixes -->
+484
+                <div class="col-span-1 md:col-span-2">
+485
+                    <h3 class="text-lg font-semibold text-blue-200 mb-4">Immediate Fixes (Auto-Generated)</h3>
+486
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="fixesContainer">
+487
+                        <!-- Fixes populated via JS -->
+488
+                    </div>
+489
+                </div>
+490
+            </div>
+491
+        </div>
+492
+​
+493
+    </div>
+494
+​
+495
+    <script>
+496
+        // --- 1. CONFIG & DATA ---
+497
+        // SECURITY NOTE: In a real production app, never expose API keys in client-side code.
+498
+        const GEMINI_API_KEY = "AIzaSyBBJEd243oVUTfKj_F_XlnwJqo4zl3NLzY"; 
+499
+​
+500
+        let chartInstance = null;
+501
+        let visibilityChartInstance = null;
+502
+        let currentPlatform = 'instagram'; // 'instagram' or 'facebook'
+503
+        let currentProcessedData = []; // Store data globally
+504
+        let currentRawData = [];
+505
+​
+506
+        // Helper: Robust Safe Parse for various number formats
+507
+        const safeParse = (val) => {
+508
+            if (val === null || val === undefined) return 0;
+509
+            if (typeof val === 'number') return Math.round(val);
+510
+            
+511
+            let str = val.toString().trim().toUpperCase();
+512
+            if (str === '') return 0;
+513
+            
+514
+            // 1. Detect Suffixes (Standard US or Custom)
+515
+            let multiplier = 1;
+516
+            if (str.endsWith('K')) multiplier = 1000;
+517
+            else if (str.endsWith('M')) multiplier = 1000000;
+518
+            else if (str.endsWith('B')) multiplier = 1000000000;
+519
+            
+520
+            // Remove suffixes for cleaning
+521
+            str = str.replace(/[KMB]/g, '').trim();
+522
+            
+523
+            if (multiplier > 1) {
+524
+                // Suffix Handling (e.g. 1.5K -> 1500)
+525
+                str = str.replace(',', '.'); // Standardize decimal
+526
+                const clean = str.replace(/[^0-9.-]/g, '');
+527
+                const num = parseFloat(clean);
+528
+                return isNaN(num) ? 0 : Math.round(num * multiplier);
+529
+            } else {
+530
+                // NO SUFFIX -> STRICT INTEGER (e.g. 1.000 or 1,000 or 1 000 -> 1000)
+531
+                // Remove EVERYTHING that isn't a digit
+532
+                const clean = str.replace(/[^0-9]/g, '');
+533
+                const num = parseInt(clean, 10);
+534
+                return isNaN(num) ? 0 : num;
+535
+            }
+536
+        };
+537
+​
+538
+        // Mock Data
+539
+        const demoData = [
+540
+            { language: "Uzbek", type: "Reel", likes: 200, comments: 45, reach: 85000, shares: 1200, follows: 850, unfollows: 10, postingTime: "2023-10-01 16:00", description: "Wait for the end! 😱 #viral", hasHashtags: true },
+541
+            { language: "Persian", type: "Image", likes: 150, comments: 20, reach: 72000, shares: 950, follows: 710, unfollows: 5, postingTime: "2023-10-02 17:30", description: "The truth about success.", hasHashtags: true },
+542
+            { language: "Spanish", type: "Carousel", likes: 300, comments: 60, reach: 65000, shares: 800, follows: 500, unfollows: 20, postingTime: "2023-10-03 20:00", description: "¿Sabías esto? #curioso", hasHashtags: true },
+Page settings
+Search Description
+Options
+Page: Edit
